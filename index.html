@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APR Ferragens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Slab:wght@700&display=swap');
+       
+        .logo-font { font-family: 'Roboto Slab', sans-serif; }
+       
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(227 6 19 / 0.15);
+        }
+       
+        .modal-content {
+            animation: modalPop 0.3s ease forwards;
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-zinc-50 font-sans">
+    <!-- HEADER -->
+    <nav class="bg-zinc-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div onclick="navigateTo('home')" class="flex items-center gap-3 cursor-pointer">
+                <img src="LOGO APRFERRAGENS BRANCO.png" alt="APR Ferragens" class="h-12 sm:h-16 w-auto object-contain">
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a onclick="navigateTo('home')" class="hover:text-red-400 cursor-pointer">Início</a>
+                <a onclick="navigateTo('orders')" class="hover:text-red-400 cursor-pointer">Meus Pedidos</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="mailto:aprferragens@hotmail.com" class="hidden sm:flex items-center gap-2 text-sm hover:text-red-400">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a onclick="navigateTo('cart')" class="flex items-center gap-2 hover:text-red-400 cursor-pointer relative">
+                    <i class="fas fa-shopping-cart text-2xl"></i>
+                    <span id="cart-count-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium">0</span>
+                </a>
+                <a href="https://wa.me/5511992663975" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-3xl text-sm font-medium">
+                    <i class="fab fa-whatsapp"></i>
+                    <span class="hidden sm:inline">(11) 99266-3975</span>
+                </a>
+            </div>
+            <button onclick="toggleMobileMenu()" class="md:hidden text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-zinc-900 border-t border-zinc-800 px-6 py-4">
+            <div class="flex flex-col gap-4 text-sm">
+                <a onclick="navigateTo('home');toggleMobileMenu()" class="py-2">Início</a>
+                <a onclick="navigateTo('cart');toggleMobileMenu()" class="py-2">Carrinho</a>
+                <a onclick="navigateTo('orders');toggleMobileMenu()" class="py-2">Meus Pedidos</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO + CATÁLOGO -->
+    <div id="home-section">
+        <div class="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white py-16 md:py-24">
+            <div class="max-w-7xl mx-auto px-6 text-center">
+                <h1 class="text-5xl md:text-7xl font-bold logo-font leading-tight mb-6">APR FERRAGENS</h1>
+                <p class="text-lg md:text-xl text-zinc-300 max-w-xl mx-auto mb-10">Qualidade que constrói.<br>Entrega rápida em toda São Paulo.</p>
+                <a href="https://wa.me/5511992663975" target="_blank" class="border-2 border-white hover:bg-white hover:text-zinc-900 text-white px-8 py-4 rounded-3xl text-lg font-semibold inline-flex items-center gap-3">
+                    <i class="fab fa-whatsapp text-3xl"></i> Falar no WhatsApp
+                </a>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <h2 class="text-3xl md:text-4xl font-bold text-zinc-800 flex items-center gap-3">
+                    <i class="fas fa-tools text-red-600"></i> Nossos Produtos
+                </h2>
+               
+                <!-- Campo de Busca -->
+                <div class="relative w-full md:w-96">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-zinc-400"></i>
+                    </div>
+                    <input
+                        id="search-input"
+                        type="text"
+                        placeholder="Buscar por nome ou descrição..."
+                        onkeyup="filterProducts()"
+                        class="w-full bg-white border border-zinc-200 focus:border-red-500 pl-11 py-3 rounded-3xl text-sm focus:outline-none">
+                </div>
+            </div>
+            <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+           
+            <!-- Mensagem quando não encontra nada -->
+            <div id="no-results" class="hidden text-center py-16">
+                <i class="fas fa-search text-6xl text-zinc-200 mb-4"></i>
+                <p class="text-xl text-zinc-400">Nenhum produto encontrado</p>
+                <p class="text-sm text-zinc-500 mt-2">Tente outros termos de busca</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div id="product-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="modal-content bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-hidden shadow-2xl">
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- CARRINHO -->
+    <div id="cart-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-12 hidden">
+        <h2 class="text-3xl md:text-4xl font-bold text-zinc-800 mb-8">Seu Carrinho</h2>
+        <div id="cart-empty" class="hidden text-center py-20">
+            <i class="fas fa-shopping-cart text-8xl text-zinc-200 mb-6"></i>
+            <p class="text-2xl text-zinc-400">Seu carrinho está vazio</p>
+            <button onclick="navigateTo('home')" class="mt-6 bg-red-600 text-white px-8 py-4 rounded-3xl">Ver produtos</button>
+        </div>
+        <div id="cart-content" class="hidden"></div>
+    </div>
+
+    <!-- MEUS PEDIDOS -->
+    <div id="orders-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-12 hidden">
+        <h2 class="text-3xl md:text-4xl font-bold text-zinc-800 mb-8">Meus Pedidos</h2>
+        <div id="orders-list" class="space-y-6"></div>
+    </div>
+
+    <!-- FLOATING WHATSAPP -->
+    <a href="https://wa.me/5511992663975" target="_blank" class="fixed bottom-6 right-6 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl text-4xl z-50 md:w-16 md:h-16">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        const WHATSAPP_NUMBER = "5511992663975";
+        const FRETE_FIXO = 15;
+
+        let products = [
+            { id: 1, name: "Acelerador REND BOND", description: "O RENDMELT Acelerador REND BOND é um produto em aerossol desenvolvido para agilizar processos de colagem em marcenaria, montagem de móveis e trabalhos artesanais.", price: 25.00, image: "https://down-br.img.susercontent.com/file/br-11134207-7r98o-mc127cuju0612e@resize_w900_nl.webp" },
+            { id: 2, name: "Estilete Renna", description: "O estilete da marca Renna é uma ferramenta de corte manual projetada para oferecer precisão e segurança em trabalhos de papelaria, artesanato e uso profissional.", price: 10.00, image: "https://http2.mlstatic.com/D_NQ_NP_2X_777155-MLA100077090045_122025-F.webp" },
+            { id: 3, name: "RENDBOND – Adesivo Instantâneo", description: "O RENDBOND RB100 é um adesivo instantâneo profissional da Rendicolla, formulado para oferecer cura rápida e alta resistência em diversos materiais.", price: 15.50, image: "https://http2.mlstatic.com/D_NQ_NP_2X_827500-MLA99929516323_112025-F.webp" },
+            { id: 4, name: "Cantoneira 3 furos maciço", description: "Pacote com 100 Unidades - A cantoneira 3 furos maciça é um acessório metálico de fixação muito usado em móveis e estruturas, feita geralmente em zamac ou aço reforçado.", price: 65.00, image: "cantoneira 3 furos maciço.webp" },
+            { id: 5, name: "Puxador alça redondo escovado Renna", description: "O puxador alça redondo escovado da marca Renna é um acessório moderno e resistente, disponível nos tamanhos de 64mm a 512mm.", price: "A Consultar", image: "https://http2.mlstatic.com/D_NQ_NP_2X_697191-MLB72739395066_112023-F-2-un-puxador-moveis-haste-redonda-inox-escovado-256320mm.webp" },
+            { id: 6, name: "Suporte Cantoneira 2 furos maciço", description: "Pacote com 100 unidades - O suporte cantoneira 2 furos maciço é uma peça metálica de fixação bastante utilizada em marcenaria, montagem de móveis e estruturas leves.", price: 35.00, image: "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcS00WAsPsRgPNQ7cBYqDZZJxudj-xJZbEeMs6LqQGBKi6lkc9y1RntsyVkdD25Cr5z7b1AqFgTbXoYYh1J10osn9ltD5yv6MSU-7bT6XfExR2jzPggDnp1vuzs-4y2wPotLCxbW83NC5Ek&usqp=CAc" },
+            { id: 7, name: "Puxador PVC 96mm", description: "O puxador PVC 96mm é uma opção prática e econômica para móveis, especialmente indicado em gavetas e portas de armários.", price: 2.00, image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQBgE4G-wrhcceePexiB7UPWG54vflAgk2IvfmX81ScoDSGJI2UP4Vtjlwu98SmLrHSnFGp34IulrvvRKwIUMGXDpem8u2ex3P-KuHKmBvo8igubyWUUi5SlZEyjonDKApnuaGi5RE&usqp=CAc" },
+            { id: 8, name: "Dobradiça mini Furação de 26mm", description: "A dobradiça mini com furação de 26 mm é uma ferragem bastante utilizada em móveis pequenos e delicados.", price: 5.00, image: "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTZmNBj0ayCqkSKJp_YTHzqM5EHn0q2FIAYR-6HsIcTvE_TlhtWlnvXN8wMDYU6kIHKssF02gaWU4pds65Yjq24vRdbR8_bxTGz5V0taulUI8SZGTq3ql32D4Aei46n&usqp=CAc" },
+            { id: 9, name: "Sapata U 15mm", description: "Pacote com 20 unidades - A sapata de 15 mm é um acessório de ferragem utilizado principalmente na base de móveis para dar sustentação e estabilidade.", price: 5.00, image: "data:image/jpeg;base64,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" },
+            { id: 10, name: "Cantoneira de fixação de três furos", description: "A cantoneira de fixação de três furos é uma peça metálica em formato de “L”, projetada para reforçar e unir cantos de móveis ou estruturas.", price: 1.10, image: "https://images.tcdn.com.br/img/img_prod/651731/suporte_cantoneira_branca_fixacao_3_furos_941_1_20220509164614.jpg" },
+            { id: 11, name: "Dobradiça para perfil de alumínio Renna", description: "A dobradiça para perfil de alumínio da Renna é uma ferragem moderna e prática, desenvolvida para portas montadas em perfis de alumínio.", price: 6.00, image: "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSs8JMliWnyWHztyoxPsedlTrd-0SlClY5ViZmq95kGdMzXVJ8pbruVBL_OZAAEz-s-4RaviWaD_BiOVkzumL1_n3eOd5ulifpt1t8c_TqqeowPlHpE0QnsTzm7KKre7gWQgA7GuQ&usqp=CAc" },
+            { id: 12, name: "Suporte oblongo Lateral", description: "O suporte oblongo lateral é uma peça de ferragem utilizada principalmente em sistemas de prateleiras e móveis planejados.", price: 1.70, image: "data:image/jpeg;base64,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" },
+            { id: 13, name: "Fechadura para gaveta 22mm XF", description: "A fechadura para gaveta 22 mm XF é uma ferragem projetada para garantir segurança e praticidade em gavetas de móveis residenciais, comerciais ou de escritório.", price: 7.00, image: "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSJsebohXYBZqZBlksMU24p3unwqeDXeICrHjPhYDIf40Wx3SRUhoG7yjKF8qlbkn4bYaMWqgcll1dQ9AbHGIlCJjOk4XvJIr77YRVKixhfXenAHX_X_VIRrQUIPE93Dkm93VGilEQj8Uw&usqp=CAc" },
+            { id: 14, name: "Suporte cabideiro Aéreo duplo Oblongo", description: "O suporte cabideiro aéreo duplo oblongo é uma ferragem utilizada em armários e closets para sustentação de cabideiros.", price: 6.80, image: "OBLONGO DUPLO.jpg" },
+            { id: 15, name: "Pé nivelador 1/4 com chapa U 15mm", description: "O pé nivelador 1/4 com chapa U 15 mm é uma ferragem utilizada na base de móveis para garantir estabilidade e nivelamento em pisos irregulares.", price: 5.50, image: "https://http2.mlstatic.com/D_NQ_NP_945550-MLB106831261585_022026-O.webp" },
+            { id: 16, name: "Pé nivelador com chapa 1/4", description: "O pé nivelador com chapa 1/4 é uma ferragem utilizada na base de móveis para garantir estabilidade e nivelamento em pisos irregulares.", price: 4.50, image: "PÉ COM CHAPA RETO.jpg" },
+            { id: 17, name: "Pé nivelador 5/16", description: "O pé nivelador 5/16 é uma ferragem utilizada na base de móveis para garantir estabilidade e nivelamento em pisos irregulares.", price: 6.00, image: "PÉ NIVELADOR 5.jpg" },
+            { id: 18, name: "Pé nivelador 1/4", description: "O pé nivelador 1/4 é uma ferragem muito utilizada na base de móveis para garantir estabilidade e nivelamento em pisos irregulares.", price: 2.50, image: "PE NIVELADO 14.webp" },
+            { id: 19, name: "Suporte pá ", description: "Pacote com 100 unidades - O suporte pá é uma ferragem utilizada em sistemas de prateleiras e cabideiros, funcionando como ponto de apoio para hastes ou tubos.", price: 44.00, image: "SUPORTE PA2.jpg" },
+            { id: 20, name: "Dobradiça Slow de Inox Renna", description: "A dobradiça Slow de inox da Renna é uma ferragem premium para móveis, projetada com sistema de amortecimento (soft closing) que garante fechamento suave e silencioso das portas. Ela é fabricada em aço inoxidável, resistente à oxidação, e está disponível em versões reta ou curva, com diâmetro de copo de 35 mm e ângulos de abertura entre 95° e 105°.", price: 3.00, image: "DOBRADICA RENNA.jpg" },
+            { id: 21, name: "Parafuso Para VB", description: "O parafuso para VB é uma ferragem específica utilizada em sistemas de união de móveis, especialmente em conectores VB. Esse tipo de parafuso trabalha em conjunto com o conector, permitindo que duas peças de madeira ou MDF sejam unidas de forma firme e discreta, sem que a fixação fique aparente na parte externa do móvel.", price: 0.50, image: "PARAFUSO VB.jpg" },
+            { id: 22, name: "Expositivo VB Zamak", description: "O Expositivo VB zamac é um componente essencial no sistema de união de móveis. Ele funciona como a parte “excêntrica” do conjunto, responsável por travar o parafuso VB dentro da peça de madeira ou MDF, criando uma união firme e discreta.", price: 3.50, image: "VB ZAMAK.jpg" },
+            { id: 23, name: "Expositivo VB Duplo Branco", description: "O expositivo VB duplo branco é uma variação do sistema de união VB, muito usado em móveis planejados e modulares. Ele é chamado de duplo porque permite a fixação de dois parafusos VB em um único dispositivo, aumentando a firmeza da união. O acabamento branco é pensado para dar um aspecto mais discreto e harmonioso em móveis claros, como MDF branco ou laqueado.", price: 1.70, image: "VB BRANCO.jpg" },
+
+            // === NOVO PRODUTO ADICIONADO ===
+            {
+                id: 24,
+                name: "Bucha para Suporte pá",
+                description: "Pacote com 100 unidades - Acessório essencial para fixação dos suportes pá em sistemas de prateleiras e cabideiros.",
+                price: 20.00,
+                image: "https://cdn.awsli.com.br/600x450/2716/2716952/produto/25819494640b88b582f.jpg"
+            }
+        ];
+
+        let cart = [];
+        let orders = [];
+        let currentProduct = null;
+
+        // Restante do script (funções) permanece igual
+        function navigateTo(page) {
+            document.querySelectorAll('div[id$="-section"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(page + '-section').classList.remove('hidden');
+            if (page === 'home') {
+                document.getElementById('search-input').value = '';
+                filterProducts();
+            }
+            if (page === 'cart') renderCart();
+            if (page === 'orders') renderOrders();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const container = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+            container.innerHTML = '';
+
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) || 
+                p.description.toLowerCase().includes(searchTerm)
+            );
+
+            if (filtered.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            }
+            noResults.classList.add('hidden');
+
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-3xl overflow-hidden product-card border border-zinc-100 cursor-pointer";
+                div.onclick = () => showProductDetail(p);
+                div.innerHTML = `
+                    <img src="${p.image}" class="w-full h-44 sm:h-52 object-cover">
+                    <div class="p-5">
+                        <h3 class="font-semibold text-base leading-tight line-clamp-2">${p.name}</h3>
+                        <p class="text-xs text-zinc-500 mt-3 line-clamp-3">${p.description}</p>
+                        <div class="mt-6 flex justify-between items-end">
+                            <span class="text-2xl font-bold ${p.price === 'A Consultar' ? 'text-amber-600' : 'text-zinc-800'}">
+                                ${p.price === 'A Consultar' ? 'A Consultar' : 'R$ ' + Number(p.price).toFixed(2)}
+                            </span>
+                            <button onclick="event.stopImmediatePropagation();addToCart(${p.id});" class="bg-zinc-900 text-white px-5 py-2.5 rounded-3xl text-sm">+ Carrinho</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function showProductDetail(product) {
+            currentProduct = product;
+            const modal = document.getElementById('product-modal');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <div class="relative">
+                    <button onclick="hideProductModal()" class="absolute top-4 right-4 text-3xl text-zinc-400 hover:text-zinc-600 z-10 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow">✕</button>
+                    <img src="${product.image}" class="w-full h-64 sm:h-80 object-cover" alt="${product.name}">
+                </div>
+                <div class="p-6 pb-8">
+                    <h1 class="text-2xl font-bold text-zinc-800">${product.name}</h1>
+                    <p class="text-4xl font-bold ${product.price === 'A Consultar' ? 'text-amber-600' : 'text-red-600'} mt-3">
+                        ${product.price === 'A Consultar' ? 'A Consultar' : 'R$ ' + Number(product.price).toFixed(2)}
+                    </p>
+                    <div class="mt-8">
+                        <h3 class="font-semibold text-zinc-700 mb-3 text-lg">Descrição</h3>
+                        <p class="text-zinc-600 leading-relaxed text-[15.2px]">${product.description}</p>
+                    </div>
+                    <div class="mt-10 grid grid-cols-2 gap-4">
+                        <button onclick="addToCartFromModal()" class="py-5 bg-zinc-900 hover:bg-black text-white font-semibold rounded-3xl flex items-center justify-center gap-2 active:scale-95">
+                            <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+                        </button>
+                        <button onclick="buyNowViaWhatsApp()" class="py-5 bg-[#25D366] hover:bg-[#22c55e] text-white font-semibold rounded-3xl flex items-center justify-center gap-2 active:scale-95">
+                            <i class="fab fa-whatsapp text-2xl"></i> Pedir via WhatsApp
+                        </button>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideProductModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function addToCartFromModal() {
+            if (currentProduct) addToCart(currentProduct.id);
+            hideProductModal();
+        }
+
+        function buyNowViaWhatsApp() {
+            if (!currentProduct) return;
+            const priceText = currentProduct.price === 'A Consultar' ? 'A Consultar' : 'R$ ' + Number(currentProduct.price).toFixed(2);
+            const msg = `Olá APR Ferragens!\n\nQuero comprar:\n• ${currentProduct.name}\nValor: ${priceText}\n\nPode me passar o total com frete?`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            hideProductModal();
+        }
+
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if (prod.price === "A Consultar") {
+                showToast("Este produto é 'A Consultar'. Use o botão WhatsApp para mais informações.");
+                return;
+            }
+            const exist = cart.find(item => item.id === id);
+            if (exist) exist.quantity = (exist.quantity || 1) + 1;
+            else cart.push({...prod, quantity: 1});
+            updateCartCount();
+            showToast(`${prod.name} adicionado ao carrinho!`);
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((a, b) => a + (b.quantity || 1), 0);
+            document.getElementById('cart-count-badge').textContent = count;
+        }
+
+        function renderCart() {
+            const content = document.getElementById('cart-content');
+            const empty = document.getElementById('cart-empty');
+            if (cart.length === 0) {
+                empty.classList.remove('hidden');
+                content.classList.add('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            content.classList.remove('hidden');
+
+            let subtotal = 0;
+            let html = `<div class="space-y-6">`;
+            cart.forEach((item, i) => {
+                const total = item.price * (item.quantity || 1);
+                subtotal += total;
+                html += `
+                <div class="flex gap-4 border-b pb-6">
+                    <img src="${item.image}" class="w-20 h-20 object-cover rounded-2xl">
+                    <div class="flex-1">
+                        <h4 class="font-medium">${item.name}</h4>
+                        <div class="flex justify-between mt-4">
+                            <div class="flex border rounded-3xl">
+                                <button onclick="changeQty(${i}, -1)" class="px-3">-</button>
+                                <span class="px-4">${item.quantity || 1}</span>
+                                <button onclick="changeQty(${i}, 1)" class="px-3">+</button>
+                            </div>
+                            <span class="font-bold">R$ ${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${i})" class="text-red-500"><i class="fas fa-trash"></i></button>
+                </div>`;
+            });
+            html += `</div>`;
+
+            const total = subtotal + FRETE_FIXO;
+            html += `
+            <div class="mt-8 bg-white p-6 rounded-3xl">
+                <div class="flex justify-between text-lg"><span>Subtotal</span><span>R$ ${subtotal.toFixed(2)}</span></div>
+                <div class="flex justify-between text-lg mt-2"><span>Frete (SP)</span><span class="text-red-600">R$ ${FRETE_FIXO.toFixed(2)}</span></div>
+                <div class="border-t mt-4 pt-4 flex justify-between text-xl font-bold">
+                    <span>Total</span><span>R$ ${total.toFixed(2)}</span>
+                </div>
+                <button onclick="finalizeOrder()" class="mt-6 w-full bg-red-600 text-white py-5 rounded-3xl font-bold text-lg flex items-center justify-center gap-3">
+                    <i class="fab fa-whatsapp text-2xl"></i> PEDIR PELO WHATSAPP
+                </button>
+            </div>`;
+            content.innerHTML = html;
+        }
+
+        function changeQty(i, delta) {
+            let q = (cart[i].quantity || 1) + delta;
+            if (q < 1) q = 1;
+            cart[i].quantity = q;
+            renderCart();
+        }
+
+        function removeFromCart(i) {
+            cart.splice(i, 1);
+            renderCart();
+            updateCartCount();
+        }
+
+        function finalizeOrder() {
+            if (cart.length === 0) return;
+            let msg = "Olá APR Ferragens!\n\nGostaria de fazer o pedido:\n\n";
+            cart.forEach(item => msg += `• ${item.name} × ${item.quantity || 1}\n`);
+            const subtotal = cart.reduce((a, b) => a + b.price * (b.quantity || 1), 0);
+            const total = subtotal + FRETE_FIXO;
+            msg += `\nSubtotal: R$ ${subtotal.toFixed(2)}\nFrete: R$ ${FRETE_FIXO.toFixed(2)}\nTotal: R$ ${total.toFixed(2)}\n\nAguardo confirmação.`;
+
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+            orders.unshift({id: Date.now(), date: new Date().toLocaleDateString('pt-BR'), total: total, status: "Pendente via WhatsApp"});
+            localStorage.setItem('apr_orders', JSON.stringify(orders));
+
+            cart = [];
+            updateCartCount();
+            renderCart();
+            navigateTo('home');
+            showToast("Pedido enviado para WhatsApp!");
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            if (orders.length === 0) {
+                container.innerHTML = `<p class="text-center py-12 text-zinc-400">Nenhum pedido ainda</p>`;
+                return;
+            }
+            let html = '';
+            orders.forEach(o => {
+                html += `
+                <div class="bg-white p-6 rounded-3xl border">
+                    <div class="flex justify-between">
+                        <div>
+                            <span class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-full">${o.date}</span>
+                            <p class="font-medium mt-2">Pedido #${o.id}</p>
+                        </div>
+                        <span class="text-emerald-600">${o.status}</span>
+                    </div>
+                    <p class="text-3xl font-bold mt-4">R$ ${o.total.toFixed(2)}</p>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function showToast(text) {
+            const t = document.createElement('div');
+            t.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-800 text-white px-6 py-3 rounded-3xl shadow-2xl text-sm z-50";
+            t.textContent = text;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // Inicialização
+        window.onload = () => {
+            const saved = localStorage.getItem('apr_orders');
+            if (saved) orders = JSON.parse(saved);
+            updateCartCount();
+            navigateTo('home');
+        };
+    </script>
+</body>
+</html>
